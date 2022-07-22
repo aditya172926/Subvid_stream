@@ -20,6 +20,7 @@ function App() {
   const [userAddress, setUserAddress] = useState("");
   const [userBalance, setUserBalance] = useState(0.0);
   const [loadingSpinner, setLoadingSpinner] = useState(false);
+  const [listAccounts, setListAccounts] = useState([]);
 
   const connectWallet = async () => {
     if (window.celo) {
@@ -91,7 +92,7 @@ function App() {
                 <div className='mb-4'>
                   Connect Wallet
                 </div>) : (
-                <div class="spinner-border" role="status">
+                <div class="spinner-border text-success" role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>
               )}
