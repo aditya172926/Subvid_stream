@@ -3,14 +3,17 @@ import './App.css';
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import celo_logo from './assets/Celo_logo.png';
+import ABI from './assets/SubscribeMovie.json';
 
 import Web3 from 'web3';
 import { newKitFromWeb3 } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 
 const ERC20_DECIMALS = 18;
+const contractAddress = "0x58a701095cA382Be18f210057dF1d0ec93Bd565F";
 
 var kit;
+var contract;
 
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -29,6 +32,10 @@ function App() {
         const accounts = await kit.web3.eth.getAccounts();
         kit.defaultAccount = accounts[0];
         setUserAddress(accounts[0]);
+
+        contract = new kit.web3.eth.Contract(ABI, contractAddress);
+        const testcount = await contract.methods.totalContent().call();
+        console.log("The testcount is ", testcount);
       } catch (error) {
         console.log(error);
         setLoadingSpinner(false);
