@@ -4,11 +4,29 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import celo_logo from './assets/Celo_logo.png';
 
+import Web3 from 'web3';
+import { newKitFromWeb3 } from '@celo/contractkit';
+import BigNumber from 'bignumber.js';
+
+const ERC20_DECIMALS = 20;
+
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState("");
 
   const connectWallet = async () => {
+    if (window.celo) {
+      console.log("Please approve this dapp to use it");
+      try {
+        await window.celo.enable();
+        const web3 = new Web3(window.celo);
+        let kit = newKitFromWeb3(web3);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      console.log("Install Celo Extension wallet")
+    }
     setWalletConnected(true);
     console.log(walletConnected);
   }
@@ -56,7 +74,7 @@ function App() {
             <ul className="list-group">
               {sampleArray.map((a, b) => {
                 return (
-                  <li className='list-group-item'>{a}</li>
+                  <li className='list-group-item' key={b}>{a}</li>
                 )
               })}
             </ul>
