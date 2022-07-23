@@ -1,22 +1,27 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import celo_logo from './assets/Celo_logo.png';
+import ABI from './assets/SubscribeMovie.json';
 
 import Web3 from 'web3';
 import { newKitFromWeb3 } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 
 const ERC20_DECIMALS = 18;
+const contractAddress = "0x58a701095cA382Be18f210057dF1d0ec93Bd565F";
 
 var kit;
+var contract;
 
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [userAddress, setUserAddress] = useState("");
   const [userBalance, setUserBalance] = useState(0.0);
   const [loadingSpinner, setLoadingSpinner] = useState(false);
+  const [listAccounts, setListAccounts] = useState([]);
+  const [userContent, setUserContent] = useState([]);
 
   const connectWallet = async () => {
     if (window.celo) {
@@ -29,6 +34,13 @@ function App() {
         const accounts = await kit.web3.eth.getAccounts();
         kit.defaultAccount = accounts[0];
         setUserAddress(accounts[0]);
+
+        contract = new kit.web3.eth.Contract(ABI, contractAddress);
+        const testcount = await contract.methods.totalContent().call();
+        console.log("The testcount is ", testcount);
+        const getSignedAccounts = await contract.methods.getContentCreators().call();
+        console.log(getSignedAccounts);
+        setListAccounts(getSignedAccounts);
       } catch (error) {
         console.log(error);
         setLoadingSpinner(false);
@@ -37,6 +49,8 @@ function App() {
       console.log("Install Celo Extension wallet");
     }
     await getBalance();
+    
+    
     setWalletConnected(true);
     setLoadingSpinner(false);
     console.log(walletConnected);
@@ -49,19 +63,48 @@ function App() {
     setUserBalance(cUSDBalance);
   }
 
+  // form inputs
+  const streamTitle = useRef();
+  const streamDescription = useRef();
+  const streamURL = useRef();
+
+  const submitForm = async (e) => {
+    e.preventDefault();
+    const params = [
+      streamTitle.current.value,
+      streamDescription.current.value,
+      streamURL.current.value,
+      'true'
+    ]
+    try {
+      const result = await contract.methods.addContent(...params)
+      .send({ from: kit.defaultAccount });
+    } catch (error) {
+      console.log(error);
+    }
+    console.log('Title is ', streamTitle.current.value);
+    console.log('Desc is ', streamDescription.current.value);
+  }
+
+  const getContent = async (useraddress) => {
+    console.log(useraddress);
+    const contents = await contract.methods.getMyUploadedMovies(useraddress).call();
+    console.log(contents);
+  }
+
   const sampleArray = [
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD4",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD5",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD6",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD7",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD8",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD9",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD10",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD11",
+    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD12"
   ]
 
   return (
@@ -84,8 +127,8 @@ function App() {
                 <div className='mb-4'>
                   Connect Wallet
                 </div>) : (
-                <div class="spinner-border" role="status">
-                  <span class="visually-hidden">Loading...</span>
+                <div className="spinner-border text-success" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
               )}
             </div>
@@ -93,17 +136,23 @@ function App() {
         </Modal>
         <div className='d-flex flex-row justify-content-around'>
           <div className='addressList'>
-            <h3>Address List</h3>
+            <h3>Creators List</h3>
             <ul className="list-group">
-              {sampleArray.map((a, b) => {
+              {listAccounts.map((a, b) => {
                 return (
-                  <li className='list-group-item' key={b}>{a}</li>
+                  <li onClick={() => getContent(a)} className='list-group-item' key={b}>{a.substring(0, 8)}...{a.substring(38)}</li>
                 )
               })}
             </ul>
           </div>
           <div className='contentList flex-grow-1'>
             Connected Wallet
+            <form onSubmit={submitForm}>
+              <input ref={streamTitle} type="text" placeholder='enter title' />
+              <input ref={streamDescription} type="text" placeholder='enter desc' />
+              <input ref={streamURL} type='text' placeholder='enter link' />
+              <button>add</button>
+            </form>
           </div>
         </div>
 
