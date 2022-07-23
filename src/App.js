@@ -17,7 +17,7 @@ var contract;
 
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
-  const [userAddress, setUserAddress] = useState("");
+  const [connectedAddress, setConnectedAddress] = useState("");
   const [userBalance, setUserBalance] = useState(0.0);
   const [loadingSpinner, setLoadingSpinner] = useState(false);
   const [listAccounts, setListAccounts] = useState([]);
@@ -33,7 +33,7 @@ function App() {
         kit = newKitFromWeb3(web3);
         const accounts = await kit.web3.eth.getAccounts();
         kit.defaultAccount = accounts[0];
-        setUserAddress(accounts[0]);
+        setConnectedAddress(accounts[0]);
 
         contract = new kit.web3.eth.Contract(ABI, contractAddress);
         const testcount = await contract.methods.totalContent().call();
@@ -93,20 +93,14 @@ function App() {
     setUserContent(contents);
   }
 
-  const sampleArray = [
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD4",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD5",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD6",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD7",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD8",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD9",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD10",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD11",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD12"
-  ]
+  const getSubscriptionStatus = async (creatorAddress) => {
+    const mystatus = await contract.methods.getSubscriptionStatus(creatorAddress).call();
+    if (mystatus === false) {
+      console.log("You don't have subscription for this content");
+    } else {
+      console.log("Your subscription is valid");
+    }
+  }
 
   return (
     <div className="App">
@@ -134,6 +128,7 @@ function App() {
               )}
             </div>
           </Button>
+
         </Modal>
         <div className='d-flex flex-row justify-content-around'>
           <div>
@@ -148,7 +143,7 @@ function App() {
           </div>
 
           <div className='flex-grow-1'>
-            Connected Wallet
+            Uploaded Content
             <form onSubmit={submitForm}>
               <input ref={streamTitle} type="text" placeholder='enter title' />
               <input ref={streamDescription} type="text" placeholder='enter desc' />
@@ -157,21 +152,32 @@ function App() {
             </form>
 
             <div className='d-flex flex-wrap justify-content-around'>
-              {userContent.map((mycontent, index) => {
-                return (
-                  <div className='card mb-2 mt-2' style={{ width: "18rem" }} key={index}>
-                    <div className='card-body'>
-                      <h5 className='card-title'>{mycontent[2]}</h5>
-                      <p className="card-text">{mycontent[3]}</p>
-                      <a href={mycontent[4]} className="btn btn-primary">Go somewhere</a>
+              {userContent.length === 0 ? (
+                <div className='alert alert-success' role='alert'>
+                  <h4 className='alert-heading'>🎉 Wallet Successfully Connected 🎉</h4>
+                  <p>Congratulations and Welcome to the website 🤘</p>
+                  <p>Your connected Wallet address is {connectedAddress}</p>
+                  <hr></hr>
+                  <p>Please select any address from the side panel to view their content</p>
+                </div>
+              ) : (
+                userContent.map((mycontent, index) => {
+                  return (
+                    <div className='card mb-2 mt-2' style={{ width: "18rem" }} key={index}>
+                      <iframe src={mycontent[4]} frameBorder="0" allow='autoplay; encrypted-media' allowFullScreen title='video' />
+                      <div className='card-body'>
+                        <h5 className='card-title'>{mycontent[2]}</h5>
+                        <p className="card-text">{mycontent[3]}</p>
+                        <a href={mycontent[4]} target="_blank" rel='noreferrer' style={{ color: "white", textDecoration: "none" }}><button className='btn btn-primary'>Go somewhere</button></a>
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
             </div>
 
           </div>
-          
+
         </div>
       </div>
     </div>
