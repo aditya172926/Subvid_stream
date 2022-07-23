@@ -4,13 +4,15 @@ import React, { useRef, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import celo_logo from './assets/Celo_logo.png';
 import ABI from './assets/SubscribeMovie.json';
+import erc20ABI from './assets/erc20.abi.json';
 
 import Web3 from 'web3';
 import { newKitFromWeb3 } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 
 const ERC20_DECIMALS = 18;
-const contractAddress = "0x58a701095cA382Be18f210057dF1d0ec93Bd565F";
+const contractAddress = "0x95ce455f07E611fe1449e3b59E20e699DDD3fe84";
+const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
 
 var kit;
 var contract;
@@ -18,6 +20,7 @@ var contract;
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [connectedAddress, setConnectedAddress] = useState("");
+  const [currentCreatorAddress, setCurrentCreatorAddress] = useState("");
   const [userBalance, setUserBalance] = useState(0.0);
   const [loadingSpinner, setLoadingSpinner] = useState(false);
   const [listAccounts, setListAccounts] = useState([]);
@@ -56,6 +59,25 @@ function App() {
     console.log(walletConnected);
   }
 
+  async function approve(_price) {
+    const cUSDContract = new kit.web3.eth.Contract(erc20ABI, cUSDContractAddress);
+    const result = await cUSDContract.methods.approve(contractAddress, _price).send({ from: kit.defaultAccount });
+    return result;
+  }
+
+  const SubscribeContent = async () => {
+    try {
+      await approve(1);
+    } catch (error) {
+      console.log("Some error in approval, ", error);
+    }
+    try {
+      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500).send({ from: kit.defaultAccount });
+    } catch (error) {
+      console.log("Some error in payment, ", error);
+    }
+  }
+
   const getBalance = async () => {
     const totalBalance = await kit.getTotalBalance(kit.defaultAccount);
     console.log(totalBalance);
@@ -86,20 +108,18 @@ function App() {
     console.log('Desc is ', streamDescription.current.value);
   }
 
+  const subscriptionStatus = async (useraddress) => {
+    const mystatus = await contract.methods.getSubscriptionStatus(useraddress).call();
+    console.log(`My subsc status with current ${useraddress} user is ${mystatus}`);
+    return mystatus;
+  }
+
   const getContent = async (useraddress) => {
     console.log(useraddress);
     const contents = await contract.methods.getMyUploadedMovies(useraddress).call();
     console.log(contents);
     setUserContent(contents);
-  }
-
-  const getSubscriptionStatus = async (creatorAddress) => {
-    const mystatus = await contract.methods.getSubscriptionStatus(creatorAddress).call();
-    if (mystatus === false) {
-      console.log("You don't have subscription for this content");
-    } else {
-      console.log("Your subscription is valid");
-    }
+    setCurrentCreatorAddress(useraddress);
   }
 
   return (
@@ -111,8 +131,8 @@ function App() {
         </div>
       </nav>
       <div className="container-fluid">
-        <Modal show={!walletConnected} onClick={() => connectWallet()} size="sm" centered>
 
+        <Modal show={!walletConnected} onClick={() => connectWallet()} size="sm" centered>
           <Button variant='light'>
             <div className='text-center'>
               <div className='logo mb-4 mt-4'>
@@ -128,15 +148,18 @@ function App() {
               )}
             </div>
           </Button>
-
         </Modal>
+
         <div className='d-flex flex-row justify-content-around'>
+
           <div>
             <h3>Creators List</h3>
             <ul className="list-group">
               {listAccounts.map((creator, index) => {
                 return (
-                  <li onClick={() => getContent(creator)} className='list-group-item' key={index}>{creator.substring(0, 15)}...{creator.substring(38)}</li>
+                  <li onClick={() => getContent(creator)} className='list-group-item' key={index}>
+                    {creator.substring(0, 15)}...{creator.substring(38)}
+                  </li>
                 )
               })}
             </ul>
@@ -150,6 +173,8 @@ function App() {
               <input ref={streamURL} type='text' placeholder='enter link' />
               <button>add</button>
             </form>
+
+            <button className='btn btn-primary' onClick={() => SubscribeContent()}>Subscribe</button>
 
             <div className='d-flex flex-wrap justify-content-around'>
               {userContent.length === 0 ? (
@@ -166,9 +191,15 @@ function App() {
                     <div className='card mb-2 mt-2' style={{ width: "18rem" }} key={index}>
                       <iframe src={mycontent[4]} frameBorder="0" allow='autoplay; encrypted-media' allowFullScreen title='video' />
                       <div className='card-body'>
-                        <h5 className='card-title'>{mycontent[2]}</h5>
-                        <p className="card-text">{mycontent[3]}</p>
-                        <a href={mycontent[4]} target="_blank" rel='noreferrer' style={{ color: "white", textDecoration: "none" }}><button className='btn btn-primary'>Go somewhere</button></a>
+                        <h5 className='card-title'>{mycontent['title']}</h5>
+                        <p className="card-text">{mycontent['description']}</p>
+                        {mycontent['requiresSubscription'] === true && subscriptionStatus(mycontent['owner']) === true ? (
+                          <a href={mycontent['movieUrl']} target="_blank" rel='noreferrer' style={{ color: "white", textDecoration: "none" }}>
+                            <button className='btn btn-primary'>Go somewhere</button>
+                          </a>
+                        ) : (
+                          <button className='btn btn-primary' disabled>Go somewhere</button>
+                        )}
                       </div>
                     </div>
                   )
