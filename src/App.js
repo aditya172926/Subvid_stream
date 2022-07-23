@@ -17,7 +17,7 @@ var contract;
 
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
-  const [userAddress, setUserAddress] = useState("");
+  const [connectedAddress, setConnectedAddress] = useState("");
   const [userBalance, setUserBalance] = useState(0.0);
   const [loadingSpinner, setLoadingSpinner] = useState(false);
   const [listAccounts, setListAccounts] = useState([]);
@@ -33,7 +33,7 @@ function App() {
         kit = newKitFromWeb3(web3);
         const accounts = await kit.web3.eth.getAccounts();
         kit.defaultAccount = accounts[0];
-        setUserAddress(accounts[0]);
+        setConnectedAddress(accounts[0]);
 
         contract = new kit.web3.eth.Contract(ABI, contractAddress);
         const testcount = await contract.methods.totalContent().call();
@@ -49,8 +49,8 @@ function App() {
       console.log("Install Celo Extension wallet");
     }
     await getBalance();
-    
-    
+
+
     setWalletConnected(true);
     setLoadingSpinner(false);
     console.log(walletConnected);
@@ -78,7 +78,7 @@ function App() {
     ]
     try {
       const result = await contract.methods.addContent(...params)
-      .send({ from: kit.defaultAccount });
+        .send({ from: kit.defaultAccount });
     } catch (error) {
       console.log(error);
     }
@@ -90,22 +90,17 @@ function App() {
     console.log(useraddress);
     const contents = await contract.methods.getMyUploadedMovies(useraddress).call();
     console.log(contents);
+    setUserContent(contents);
   }
 
-  const sampleArray = [
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD4",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD5",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD6",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD7",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD8",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD9",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD10",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD11",
-    "0x00DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD12"
-  ]
+  const getSubscriptionStatus = async (creatorAddress) => {
+    const mystatus = await contract.methods.getSubscriptionStatus(creatorAddress).call();
+    if (mystatus === false) {
+      console.log("You don't have subscription for this content");
+    } else {
+      console.log("Your subscription is valid");
+    }
+  }
 
   return (
     <div className="App">
@@ -133,29 +128,57 @@ function App() {
               )}
             </div>
           </Button>
+
         </Modal>
         <div className='d-flex flex-row justify-content-around'>
-          <div className='addressList'>
+          <div>
             <h3>Creators List</h3>
             <ul className="list-group">
-              {listAccounts.map((a, b) => {
+              {listAccounts.map((creator, index) => {
                 return (
-                  <li onClick={() => getContent(a)} className='list-group-item' key={b}>{a.substring(0, 8)}...{a.substring(38)}</li>
+                  <li onClick={() => getContent(creator)} className='list-group-item' key={index}>{creator.substring(0, 15)}...{creator.substring(38)}</li>
                 )
               })}
             </ul>
           </div>
-          <div className='contentList flex-grow-1'>
-            Connected Wallet
+
+          <div className='flex-grow-1'>
+            Uploaded Content
             <form onSubmit={submitForm}>
               <input ref={streamTitle} type="text" placeholder='enter title' />
               <input ref={streamDescription} type="text" placeholder='enter desc' />
               <input ref={streamURL} type='text' placeholder='enter link' />
               <button>add</button>
             </form>
-          </div>
-        </div>
 
+            <div className='d-flex flex-wrap justify-content-around'>
+              {userContent.length === 0 ? (
+                <div className='alert alert-success' role='alert'>
+                  <h4 className='alert-heading'>🎉 Wallet Successfully Connected 🎉</h4>
+                  <p>Congratulations and Welcome to the website 🤘</p>
+                  <p>Your connected Wallet address is {connectedAddress}</p>
+                  <hr></hr>
+                  <p>Please select any address from the side panel to view their content</p>
+                </div>
+              ) : (
+                userContent.map((mycontent, index) => {
+                  return (
+                    <div className='card mb-2 mt-2' style={{ width: "18rem" }} key={index}>
+                      <iframe src={mycontent[4]} frameBorder="0" allow='autoplay; encrypted-media' allowFullScreen title='video' />
+                      <div className='card-body'>
+                        <h5 className='card-title'>{mycontent[2]}</h5>
+                        <p className="card-text">{mycontent[3]}</p>
+                        <a href={mycontent[4]} target="_blank" rel='noreferrer' style={{ color: "white", textDecoration: "none" }}><button className='btn btn-primary'>Go somewhere</button></a>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+          </div>
+
+        </div>
       </div>
     </div>
   );
