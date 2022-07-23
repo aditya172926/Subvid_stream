@@ -49,8 +49,8 @@ function App() {
       console.log("Install Celo Extension wallet");
     }
     await getBalance();
-    
-    
+
+
     setWalletConnected(true);
     setLoadingSpinner(false);
     console.log(walletConnected);
@@ -78,7 +78,7 @@ function App() {
     ]
     try {
       const result = await contract.methods.addContent(...params)
-      .send({ from: kit.defaultAccount });
+        .send({ from: kit.defaultAccount });
     } catch (error) {
       console.log(error);
     }
@@ -90,6 +90,7 @@ function App() {
     console.log(useraddress);
     const contents = await contract.methods.getMyUploadedMovies(useraddress).call();
     console.log(contents);
+    setUserContent(contents);
   }
 
   const sampleArray = [
@@ -135,17 +136,17 @@ function App() {
           </Button>
         </Modal>
         <div className='d-flex flex-row justify-content-around'>
-          <div className='addressList'>
+          <div>
             <h3>Creators List</h3>
             <ul className="list-group">
-              {listAccounts.map((a, b) => {
+              {listAccounts.map((creator, index) => {
                 return (
-                  <li onClick={() => getContent(a)} className='list-group-item' key={b}>{a.substring(0, 8)}...{a.substring(38)}</li>
+                  <li onClick={() => getContent(creator)} className='list-group-item' key={index}>{creator.substring(0, 15)}...{creator.substring(38)}</li>
                 )
               })}
             </ul>
           </div>
-          <div className='contentList flex-grow-1'>
+          <div className='flex-grow-1'>
             Connected Wallet
             <form onSubmit={submitForm}>
               <input ref={streamTitle} type="text" placeholder='enter title' />
@@ -153,6 +154,104 @@ function App() {
               <input ref={streamURL} type='text' placeholder='enter link' />
               <button>add</button>
             </form>
+            <div className='d-flex flex-wrap justify-content-around'>
+
+              {userContent.map((mycontent, index) => {
+
+                return (
+                  <div className='card mb-2 mt-2' style={{ width: "18rem" }} key={index}>
+                    <div className='card-body'>
+                      <h5 className='card-title'>{mycontent[2]}</h5>
+                      <p className="card-text">{mycontent[3]}</p>
+                      <a href={mycontent[4]} className="btn btn-primary">Go somewhere</a>
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div>
+
+              <div className='card mb-2 mt-2' style={{width: "18rem"}}>
+                <div className='card-body'>
+                  <h5 className='card-title'>Title</h5>
+                  <p className="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+              </div> */}
+
+
+
+            </div>
           </div>
         </div>
 
