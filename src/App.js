@@ -25,6 +25,7 @@ function App() {
   const [loadingSpinner, setLoadingSpinner] = useState(false);
   const [listAccounts, setListAccounts] = useState([]);
   const [userContent, setUserContent] = useState([]);
+  const [notSubscribed, setNotSubscribed] = useState();
 
   const connectWallet = async () => {
     if (window.celo) {
@@ -110,16 +111,16 @@ function App() {
 
   const subscriptionStatus = async (useraddress) => {
     const mystatus = await contract.methods.getSubscriptionStatus(useraddress).call();
-    console.log(`My subsc status with current ${useraddress} user is ${mystatus}`);
-    return mystatus;
+    console.log(mystatus);
+    setNotSubscribed(mystatus);
   }
 
   const getContent = async (useraddress) => {
-    console.log(useraddress);
+    setCurrentCreatorAddress(useraddress);
     const contents = await contract.methods.getMyUploadedMovies(useraddress).call();
     console.log(contents);
     setUserContent(contents);
-    setCurrentCreatorAddress(useraddress);
+    await subscriptionStatus(useraddress);
   }
 
   return (
@@ -165,53 +166,54 @@ function App() {
             </ul>
           </div>
 
-          <div className='flex-grow-1'>
-            Uploaded Content
-            <form onSubmit={submitForm}>
-              <input ref={streamTitle} type="text" placeholder='enter title' />
-              <input ref={streamDescription} type="text" placeholder='enter desc' />
-              <input ref={streamURL} type='text' placeholder='enter link' />
-              <button>add</button>
-            </form>
-
+          {notSubscribed ? (
+            <>
             <button className='btn btn-primary' onClick={() => SubscribeContent()}>Subscribe</button>
+            </>
+          ) : (
 
-            <div className='d-flex flex-wrap justify-content-around'>
-              {userContent.length === 0 ? (
-                <div className='alert alert-success' role='alert'>
-                  <h4 className='alert-heading'>🎉 Wallet Successfully Connected 🎉</h4>
-                  <p>Congratulations and Welcome to the website 🤘</p>
-                  <p>Your connected Wallet address is {connectedAddress}</p>
-                  <hr></hr>
-                  <p>Please select any address from the side panel to view their content</p>
-                </div>
-              ) : (
-                userContent.map((mycontent, index) => {
-                  return (
-                    <div className='card mb-2 mt-2' style={{ width: "18rem" }} key={index}>
-                      <iframe src={mycontent[4]} frameBorder="0" allow='autoplay; encrypted-media' allowFullScreen title='video' />
-                      <div className='card-body'>
-                        <h5 className='card-title'>{mycontent['title']}</h5>
-                        <p className="card-text">{mycontent['description']}</p>
-                        {mycontent['requiresSubscription'] === true && subscriptionStatus(mycontent['owner']) === true ? (
+            <div className='flex-grow-1'>
+              Uploaded Content
+              <form onSubmit={submitForm}>
+                <input ref={streamTitle} type="text" placeholder='enter title' />
+                <input ref={streamDescription} type="text" placeholder='enter desc' />
+                <input ref={streamURL} type='text' placeholder='enter link' />
+                <button>add</button>
+              </form>
+
+              <div className='d-flex flex-wrap justify-content-around'>
+                {userContent.length === 0 ? (
+                  <div className='alert alert-success' role='alert'>
+                    <h4 className='alert-heading'>🎉 Wallet Successfully Connected 🎉</h4>
+                    <p>Congratulations and Welcome to the website 🤘</p>
+                    <p>Your connected Wallet address is {connectedAddress}</p>
+                    <hr></hr>
+                    <p>Please select any address from the side panel to view their content</p>
+                  </div>
+                ) : (
+                  userContent.map((mycontent, index) => {
+                    return (
+                      <div className='card mb-2 mt-2' style={{ width: "18rem" }} key={index}>
+                        <iframe src={mycontent[4]} frameBorder="0" allow='autoplay; encrypted-media' allowFullScreen title='video' />
+                        <div className='card-body'>
+                          <h5 className='card-title'>{mycontent['title']}</h5>
+                          <p className="card-text">{mycontent['description']}</p>
                           <a href={mycontent['movieUrl']} target="_blank" rel='noreferrer' style={{ color: "white", textDecoration: "none" }}>
                             <button className='btn btn-primary'>Go somewhere</button>
                           </a>
-                        ) : (
-                          <button className='btn btn-primary' disabled>Go somewhere</button>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })
-              )}
-            </div>
+                    )
+                  })
+                )}
+              </div>
 
-          </div>
+            </div>
+          )}
 
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
