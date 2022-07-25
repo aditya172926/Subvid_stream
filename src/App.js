@@ -163,7 +163,6 @@ function App() {
       <nav className="navbar navbar-expand-lg bg-light">
         <div className="container-fluid">
           <span className="navbar-brand">SubVid</span>
-
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
@@ -181,7 +180,7 @@ function App() {
       <div className="container-fluid">
 
         {/* wallet connected modal */}
-        <Modal show={!walletConnected} onClick={() => connectWallet()} size="sm" centered>
+        <Modal show={!walletConnected} onClick={() => connectWallet()} style={{ backdropFilter: "blur(20px)" }} size="sm" centered>
           <Button variant='light'>
             <div className='text-center'>
               <div className='logo mb-4 mt-4'>
@@ -189,7 +188,7 @@ function App() {
               </div>
               {!loadingSpinner ? (
                 <div className='mb-4'>
-                  Connect Wallet
+                  <h5>Connect Wallet</h5>
                 </div>) : (
                 <div className="spinner-border text-success" role="status">
                   <span className="visually-hidden">Loading...</span>
