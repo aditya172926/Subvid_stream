@@ -116,11 +116,11 @@ function App() {
   }
 
   const getContent = async (useraddress) => {
+    await subscriptionStatus(useraddress);
     setCurrentCreatorAddress(useraddress);
     const contents = await contract.methods.getMyUploadedMovies(useraddress).call();
     console.log(contents);
     setUserContent(contents);
-    await subscriptionStatus(useraddress);
   }
 
   return (
@@ -167,12 +167,17 @@ function App() {
           </div>
 
           {notSubscribed ? (
-            <>
-            <button className='btn btn-primary' onClick={() => SubscribeContent()}>Subscribe</button>
-            </>
+            <div className='alert alert-danger mt-5' role='alert'>
+              <h4 className='alert-heading'>⚠ You don't have subscription for this creator ⚠</h4>
+              <p>Susbcribe to view the content posted</p>
+              <hr></hr>
+              <div className='d-grid col-6 mx-auto'>
+                <button className='btn btn-danger' onClick={() => SubscribeContent()}>Subscribe</button>
+              </div>
+            </div>
           ) : (
 
-            <div className='flex-grow-1'>
+            <div className='w-75'>
               Uploaded Content
               <form onSubmit={submitForm}>
                 <input ref={streamTitle} type="text" placeholder='enter title' />
@@ -185,7 +190,7 @@ function App() {
                 {userContent.length === 0 ? (
                   <div className='alert alert-success' role='alert'>
                     <h4 className='alert-heading'>🎉 Wallet Successfully Connected 🎉</h4>
-                    <p>Congratulations and Welcome to the website 🤘</p>
+                    <p>Congratulations and Welcome to the website</p>
                     <p>Your connected Wallet address is {connectedAddress}</p>
                     <hr></hr>
                     <p>Please select any address from the side panel to view their content</p>
