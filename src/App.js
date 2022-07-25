@@ -1,14 +1,11 @@
-import logo from './logo.svg';
 import './App.css';
 import React, { useRef, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import celo_logo from './assets/Celo_logo.png';
 import ABI from './assets/SubscribeMovie.json';
 import erc20ABI from './assets/erc20.abi.json';
-
 import Web3 from 'web3';
 import { newKitFromWeb3 } from '@celo/contractkit';
-import BigNumber from 'bignumber.js';
 
 const ERC20_DECIMALS = 18;
 const contractAddress = "0x57Eb98688DE082a3d542F1a09d431477c74227f5";
@@ -27,7 +24,7 @@ function App() {
   const [userContent, setUserContent] = useState([]);
   const [notSubscribed, setNotSubscribed] = useState();
 
-  const [my_earnedBalance, setMy_earnedBalance] = useState(0);
+  const [my_earnedBalance, setMy_earnedBalance] = useState(0.00);
   const [subscriptionAmt, setSubscriptionAmt] = useState(0);
 
   // modals
@@ -234,13 +231,13 @@ function App() {
             <Modal.Title>My Earnings</Modal.Title>
           </Modal.Header>
           <Modal.Body className='d-flex flex-row justify-content-center'>
-            <h5>{my_earnedBalance} cUSD</h5>
+            <h5>{(my_earnedBalance / (10 ** ERC20_DECIMALS)).toFixed(2)} cUSD</h5>
           </Modal.Body>
         </Modal>
 
         <div className='d-flex flex-row justify-content-around'>
           <div>
-            <h3>Creators List</h3>
+            <h3>Creators</h3>
             <ul className="list-group">
               {listAccounts.map((creator, index) => {
                 return (
@@ -290,7 +287,7 @@ function App() {
                     <p>Congratulations and Welcome to the SubVid</p>
                     <p>Your connected Wallet address is {connectedAddress}</p>
                     <hr></hr>
-                    <p>Please select any address from the side panel to subscribe and view their content</p>
+                    <p>Please select any address from the <b>Creators'</b> list to subscribe and view their content</p>
                     <h5>OR</h5>
                     <button className='btn btn-success' onClick={() => setShowAddModal(true)}>Add your own 📣</button>
                   </div>
