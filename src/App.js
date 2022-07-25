@@ -33,6 +33,7 @@ function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEarningsModal, setShowEarningsModal] = useState(false);
 
+  // Connect Celo wallet
   const connectWallet = async () => {
     if (window.celo) {
       console.log("Please approve this dapp to use it");
@@ -63,12 +64,14 @@ function App() {
     console.log(walletConnected);
   }
 
+  // Approve payment for subscription
   async function approve(_price) {
     const cUSDContract = new kit.web3.eth.Contract(erc20ABI, cUSDContractAddress);
     const result = await cUSDContract.methods.approve(contractAddress, _price).send({ from: kit.defaultAccount });
     return result;
   }
 
+  // subscribe to selected users content
   const SubscribeContent = async () => {
     try {
       await approve(1000);
@@ -82,6 +85,7 @@ function App() {
     }
   }
 
+  // get user balance
   const getBalance = async () => {
     const totalBalance = await kit.getTotalBalance(kit.defaultAccount);
     console.log(totalBalance);
@@ -106,6 +110,7 @@ function App() {
     try {
       const result = await contract.methods.addContent(...params)
         .send({ from: kit.defaultAccount });
+      setShowAddModal(false);
     } catch (error) {
       console.log(error);
     }
@@ -124,12 +129,14 @@ function App() {
     }
   }
 
+  // Get subsciption status
   const subscriptionStatus = async (useraddress) => {
     const mystatus = await contract.methods.getSubscriptionStatus(useraddress).call();
     console.log(mystatus);
     setNotSubscribed(mystatus);
   }
 
+  // Get uploaded content for useraddress
   const getContent = async (useraddress) => {
     await subscriptionStatus(useraddress);
     setCurrentCreatorAddress(useraddress);
@@ -155,7 +162,7 @@ function App() {
               </li>
             </ul>
           </div>
-          Balance - {userBalance}
+          Balance - {userBalance} cUSD
         </div>
       </nav>
 
