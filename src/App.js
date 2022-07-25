@@ -171,7 +171,7 @@ function App() {
           </Button>
         </Modal>
 
-        <Modal show={showAddModal} centered>
+        <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered>
           <Modal.Header closeButton>
             <Modal.Title>Upload Your Content</Modal.Title>
           </Modal.Header>
@@ -180,7 +180,6 @@ function App() {
             <input ref={streamDescription} type="text" placeholder='enter desc' />
             <input ref={streamURL} type='text' placeholder='enter link' />
             <button className='btn btn-primary' type='submit'>Add</button>
-            <button className='btn btn-danger' onClick={() => setShowAddModal(false)}>Close</button>
           </form>
         </Modal>
 
