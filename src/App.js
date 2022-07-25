@@ -11,7 +11,7 @@ import { newKitFromWeb3 } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 
 const ERC20_DECIMALS = 18;
-const contractAddress = "0x0788A2D3cC8917e1cfb0217F6cfEf2c47c1969B5";
+const contractAddress = "0x57Eb98688DE082a3d542F1a09d431477c74227f5";
 const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
 
 var kit;
@@ -26,8 +26,14 @@ function App() {
   const [listAccounts, setListAccounts] = useState([]);
   const [userContent, setUserContent] = useState([]);
   const [notSubscribed, setNotSubscribed] = useState();
-  const [showAddModal, setShowAddModal] = useState(false);
 
+  const [my_earnedBalance, setMy_earnedBalance] = useState(0);
+
+  // modals
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEarningsModal, setShowEarningsModal] = useState(false);
+
+  // Connect Celo wallet
   const connectWallet = async () => {
     if (window.celo) {
       console.log("Please approve this dapp to use it");
@@ -39,7 +45,6 @@ function App() {
         const accounts = await kit.web3.eth.getAccounts();
         kit.defaultAccount = accounts[0];
         setConnectedAddress(accounts[0]);
-
         contract = new kit.web3.eth.Contract(ABI, contractAddress);
         const testcount = await contract.methods.totalContent().call();
         console.log("The testcount is ", testcount);
@@ -54,19 +59,19 @@ function App() {
       console.log("Install Celo Extension wallet");
     }
     await getBalance();
-
-
     setWalletConnected(true);
     setLoadingSpinner(false);
     console.log(walletConnected);
   }
 
+  // Approve payment for subscription
   async function approve(_price) {
     const cUSDContract = new kit.web3.eth.Contract(erc20ABI, cUSDContractAddress);
     const result = await cUSDContract.methods.approve(contractAddress, _price).send({ from: kit.defaultAccount });
     return result;
   }
 
+  // subscribe to selected users content
   const SubscribeContent = async () => {
     try {
       await approve(1000);
@@ -80,6 +85,7 @@ function App() {
     }
   }
 
+  // get user balance
   const getBalance = async () => {
     const totalBalance = await kit.getTotalBalance(kit.defaultAccount);
     console.log(totalBalance);
@@ -92,7 +98,8 @@ function App() {
   const streamDescription = useRef();
   const streamURL = useRef();
 
-  const submitForm = async (e) => {
+  // Add content function
+  const submitAddContent = async (e) => {
     e.preventDefault();
     const params = [
       streamTitle.current.value,
@@ -103,6 +110,7 @@ function App() {
     try {
       const result = await contract.methods.addContent(...params)
         .send({ from: kit.defaultAccount });
+      setShowAddModal(false);
     } catch (error) {
       console.log(error);
     }
@@ -110,12 +118,25 @@ function App() {
     console.log('Desc is ', streamDescription.current.value);
   }
 
+  // Withdraw function
+  const getMyEarnings = async () => {
+    try {
+      const earnedBalance = await contract.methods.checkEarnings().call();
+      setMy_earnedBalance(earnedBalance);
+      setShowEarningsModal(true);
+    } catch (error) {
+      console.log("Error in checking earned balance", error);
+    }
+  }
+
+  // Get subsciption status
   const subscriptionStatus = async (useraddress) => {
     const mystatus = await contract.methods.getSubscriptionStatus(useraddress).call();
     console.log(mystatus);
     setNotSubscribed(mystatus);
   }
 
+  // Get uploaded content for useraddress
   const getContent = async (useraddress) => {
     await subscriptionStatus(useraddress);
     setCurrentCreatorAddress(useraddress);
@@ -137,22 +158,17 @@ function App() {
                 <button className="btn btn-light" onClick={() => setShowAddModal(!showAddModal)} >Add</button>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">Earnings</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="#">Withdraw Money</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link">Cancel Subscription</a>
+                <button className="btn btn-light" onClick={() => getMyEarnings()}>Earnings</button>
               </li>
             </ul>
           </div>
-          Balance - {userBalance}
+          Balance - {userBalance} cUSD
         </div>
       </nav>
 
       <div className="container-fluid">
 
+        {/* wallet connected modal */}
         <Modal show={!walletConnected} onClick={() => connectWallet()} size="sm" centered>
           <Button variant='light'>
             <div className='text-center'>
@@ -171,21 +187,42 @@ function App() {
           </Button>
         </Modal>
 
+        {/* Add content modal */}
         <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered>
           <Modal.Header closeButton>
             <Modal.Title>Upload Your Content</Modal.Title>
           </Modal.Header>
-          <form onSubmit={submitForm}>
-            <input ref={streamTitle} type="text" placeholder='enter title' />
-            <input ref={streamDescription} type="text" placeholder='enter desc' />
-            <input ref={streamURL} type='text' placeholder='enter link' />
-            <button className='btn btn-primary' type='submit'>Add</button>
-          </form>
+          <Modal.Body>
+            <form onSubmit={submitAddContent}>
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Title</label>
+                <input ref={streamTitle} type="text" class="form-control" id="inputTitle" aria-describedby="titleHelp" placeholder='Enter the title of your content' />
+              </div>
+              <div class="mb-3">
+                <label for="inputDesc" class="form-label">About</label>
+                <input ref={streamDescription} type="text" class="form-control" id="inputDesc" placeholder='2 liner about your content' />
+              </div>
+              <div class="mb-3">
+                <label for="inputLink" class="form-label">Content Link</label>
+                <input ref={streamURL} type="text" class="form-control" id="inputLink" placeholder='Paste your content link' />
+              </div>
+              <div class="d-grid gap-2">
+                <button type='submit' className='btn btn-success'>Add</button>
+              </div>
+            </form>
+          </Modal.Body>
         </Modal>
 
+        <Modal show={showEarningsModal} onHide={() => setShowEarningsModal(false)} size="sm" centered>
+          <Modal.Header closeButton>
+            <Modal.Title>My Earnings</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className='d-flex flex-row justify-content-center'>
+            <h5>{my_earnedBalance} cUSD</h5>
+          </Modal.Body>
+        </Modal>
 
         <div className='d-flex flex-row justify-content-around'>
-
           <div>
             <h3>Creators List</h3>
             <ul className="list-group">
@@ -210,10 +247,7 @@ function App() {
             </div>
           ) : (
             <div className='w-75'>
-              Uploaded Content
-
-
-              <div className='d-flex flex-wrap justify-content-around'>
+              <div className='d-flex flex-wrap justify-content-around mt-5'>
                 {userContent.length === 0 ? (
                   <div className='alert alert-success' role='alert'>
                     <h4 className='alert-heading'>🎉 Wallet Successfully Connected 🎉</h4>
@@ -231,7 +265,7 @@ function App() {
                           <h5 className='card-title'>{mycontent['title']}</h5>
                           <p className="card-text">{mycontent['description']}</p>
                           <a href={mycontent['movieUrl']} target="_blank" rel='noreferrer' style={{ color: "white", textDecoration: "none" }}>
-                            <button className='btn btn-primary'>Go somewhere</button>
+                            <button className='btn btn-primary'>Show</button>
                           </a>
                         </div>
                       </div>
@@ -239,7 +273,6 @@ function App() {
                   })
                 )}
               </div>
-
             </div>
           )}
 
