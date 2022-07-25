@@ -1,14 +1,11 @@
-import logo from './logo.svg';
 import './App.css';
 import React, { useRef, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import celo_logo from './assets/Celo_logo.png';
 import ABI from './assets/SubscribeMovie.json';
 import erc20ABI from './assets/erc20.abi.json';
-
 import Web3 from 'web3';
 import { newKitFromWeb3 } from '@celo/contractkit';
-import BigNumber from 'bignumber.js';
 
 const ERC20_DECIMALS = 18;
 const contractAddress = "0x57Eb98688DE082a3d542F1a09d431477c74227f5";
@@ -27,7 +24,8 @@ function App() {
   const [userContent, setUserContent] = useState([]);
   const [notSubscribed, setNotSubscribed] = useState();
 
-  const [my_earnedBalance, setMy_earnedBalance] = useState(0);
+  const [my_earnedBalance, setMy_earnedBalance] = useState(0.00);
+  const [subscriptionAmt, setSubscriptionAmt] = useState(0);
 
   // modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -73,13 +71,22 @@ function App() {
 
   // subscribe to selected users content
   const SubscribeContent = async () => {
+    let duration;
+    if (subscriptionAmt == 1000000000000000000) {
+      duration = 600; // 10 minutes
+    } else if (subscriptionAmt == 3000000000000000000) {
+      duration = 1200; // 20 minutes
+    } else {
+      duration = 1800 // 30 minutes
+    }
+    console.log(`The duration is ${duration} seconds for ${subscriptionAmt}`);
     try {
-      await approve(1000);
+      await approve(subscriptionAmt);
     } catch (error) {
       console.log("Some error in approval, ", error);
     }
     try {
-      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500, 1000).send({ from: kit.defaultAccount });
+      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500, subscriptionAmt).send({ from: kit.defaultAccount });
     } catch (error) {
       console.log("Some error in payment, ", error);
     }
@@ -145,13 +152,17 @@ function App() {
     setUserContent(contents);
   }
 
+  const handleChange = (e) => {
+    setSubscriptionAmt(e.target.value);
+    console.log(e.target.value);
+  }
+
   return (
     <div className="App">
 
       <nav className="navbar navbar-expand-lg bg-light">
         <div className="container-fluid">
           <span className="navbar-brand">SubVid</span>
-
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
@@ -169,7 +180,7 @@ function App() {
       <div className="container-fluid">
 
         {/* wallet connected modal */}
-        <Modal show={!walletConnected} onClick={() => connectWallet()} size="sm" centered>
+        <Modal show={!walletConnected} onClick={() => connectWallet()} style={{ backdropFilter: "blur(20px)" }} size="sm" centered>
           <Button variant='light'>
             <div className='text-center'>
               <div className='logo mb-4 mt-4'>
@@ -177,7 +188,7 @@ function App() {
               </div>
               {!loadingSpinner ? (
                 <div className='mb-4'>
-                  Connect Wallet
+                  <h5>Connect Wallet</h5>
                 </div>) : (
                 <div className="spinner-border text-success" role="status">
                   <span className="visually-hidden">Loading...</span>
@@ -194,19 +205,19 @@ function App() {
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={submitAddContent}>
-              <div class="mb-3">
-                <label for="exampleInputEmail1" class="form-label">Title</label>
-                <input ref={streamTitle} type="text" class="form-control" id="inputTitle" aria-describedby="titleHelp" placeholder='Enter the title of your content' />
+              <div className="mb-3">
+                <label htmlFor="exampleInputEmail1" className="form-label">Title</label>
+                <input ref={streamTitle} type="text" className="form-control" id="inputTitle" aria-describedby="titleHelp" placeholder='Enter the title of your content' />
               </div>
-              <div class="mb-3">
-                <label for="inputDesc" class="form-label">About</label>
-                <input ref={streamDescription} type="text" class="form-control" id="inputDesc" placeholder='2 liner about your content' />
+              <div className="mb-3">
+                <label htmlFor="inputDesc" className="form-label">About</label>
+                <input ref={streamDescription} type="text" className="form-control" id="inputDesc" placeholder='2 liner about your content' />
               </div>
-              <div class="mb-3">
-                <label for="inputLink" class="form-label">Content Link</label>
-                <input ref={streamURL} type="text" class="form-control" id="inputLink" placeholder='Paste your content link' />
+              <div className="mb-3">
+                <label htmlFor="inputLink" className="form-label">Content Link</label>
+                <input ref={streamURL} type="text" className="form-control" id="inputLink" placeholder='Paste your content link' />
               </div>
-              <div class="d-grid gap-2">
+              <div className="d-grid gap-2">
                 <button type='submit' className='btn btn-success'>Add</button>
               </div>
             </form>
@@ -219,13 +230,13 @@ function App() {
             <Modal.Title>My Earnings</Modal.Title>
           </Modal.Header>
           <Modal.Body className='d-flex flex-row justify-content-center'>
-            <h5>{my_earnedBalance} cUSD</h5>
+            <h5>{(my_earnedBalance / (10 ** ERC20_DECIMALS)).toFixed(2)} cUSD</h5>
           </Modal.Body>
         </Modal>
 
         <div className='d-flex flex-row justify-content-around'>
           <div>
-            <h3>Creators List</h3>
+            <h3>Creators</h3>
             <ul className="list-group">
               {listAccounts.map((creator, index) => {
                 return (
@@ -242,9 +253,29 @@ function App() {
               <h4 className='alert-heading'>⚠ You don't have subscription for this creator ⚠</h4>
               <p>Susbcribe to view the content posted</p>
               <hr></hr>
-              <div className='d-grid col-6 mx-auto'>
+
+              <div className="form-check form-check-inline">
+                <input className="form-check-input" type="radio"
+                  name="inlineRadioOptions" id="inlineRadio1"
+                  value="1000000000000000000" onChange={handleChange} />
+                <label className="form-check-label" htmlFor="inlineRadio1">1 cUSD</label>
+              </div>
+              <div className="form-check form-check-inline">
+                <input className="form-check-input" type="radio"
+                  name="inlineRadioOptions" id="inlineRadio2"
+                  value="3000000000000000000" onChange={handleChange} />
+                <label className="form-check-label" htmlFor="inlineRadio2">3 cUSD</label>
+              </div>
+              <div className="form-check form-check-inline">
+                <input className="form-check-input" type="radio"
+                  name="inlineRadioOptions" id="inlineRadio3"
+                  value="5000000000000000000" onChange={handleChange} />
+                <label className="form-check-label" htmlFor="inlineRadio3">5 cUSD</label>
+              </div>
+              <div className='d-grid col-6 mx-auto mt-3'>
                 <button className='btn btn-danger' onClick={() => SubscribeContent()}>Subscribe</button>
               </div>
+
             </div>
           ) : (
             <div className='w-75'>
@@ -255,7 +286,7 @@ function App() {
                     <p>Congratulations and Welcome to the SubVid</p>
                     <p>Your connected Wallet address is {connectedAddress}</p>
                     <hr></hr>
-                    <p>Please select any address from the side panel to subscribe and view their content</p>
+                    <p>Please select any address from the <b>Creators'</b> list to subscribe and view their content</p>
                     <h5>OR</h5>
                     <button className='btn btn-success' onClick={() => setShowAddModal(true)}>Add your own 📣</button>
                   </div>
