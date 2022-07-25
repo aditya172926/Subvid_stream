@@ -321,6 +321,11 @@
 				"internalType": "uint256",
 				"name": "_duration",
 				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_amount",
+				"type": "uint256"
 			}
 		],
 		"name": "subscribeMovie",

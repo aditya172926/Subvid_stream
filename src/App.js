@@ -11,7 +11,7 @@ import { newKitFromWeb3 } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 
 const ERC20_DECIMALS = 18;
-const contractAddress = "0x95ce455f07E611fe1449e3b59E20e699DDD3fe84";
+const contractAddress = "0x0788A2D3cC8917e1cfb0217F6cfEf2c47c1969B5";
 const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
 
 var kit;
@@ -26,6 +26,7 @@ function App() {
   const [listAccounts, setListAccounts] = useState([]);
   const [userContent, setUserContent] = useState([]);
   const [notSubscribed, setNotSubscribed] = useState();
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const connectWallet = async () => {
     if (window.celo) {
@@ -68,12 +69,12 @@ function App() {
 
   const SubscribeContent = async () => {
     try {
-      await approve(1);
+      await approve(1000);
     } catch (error) {
       console.log("Some error in approval, ", error);
     }
     try {
-      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500).send({ from: kit.defaultAccount });
+      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500, 1000).send({ from: kit.defaultAccount });
     } catch (error) {
       console.log("Some error in payment, ", error);
     }
@@ -125,12 +126,31 @@ function App() {
 
   return (
     <div className="App">
-      <nav className="navbar bg-light">
+
+      <nav className="navbar navbar-expand-lg bg-light">
         <div className="container-fluid">
-          <span className="navbar-brand mb-0 h1">SubVid</span>
+          <span className="navbar-brand">SubVid</span>
+
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <button className="btn btn-light" onClick={() => setShowAddModal(!showAddModal)} >Add</button>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" href="#">Earnings</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link" href="#">Withdraw Money</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link">Cancel Subscription</a>
+              </li>
+            </ul>
+          </div>
           Balance - {userBalance}
         </div>
       </nav>
+
       <div className="container-fluid">
 
         <Modal show={!walletConnected} onClick={() => connectWallet()} size="sm" centered>
@@ -150,6 +170,20 @@ function App() {
             </div>
           </Button>
         </Modal>
+
+        <Modal show={showAddModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Upload Your Content</Modal.Title>
+          </Modal.Header>
+          <form onSubmit={submitForm}>
+            <input ref={streamTitle} type="text" placeholder='enter title' />
+            <input ref={streamDescription} type="text" placeholder='enter desc' />
+            <input ref={streamURL} type='text' placeholder='enter link' />
+            <button className='btn btn-primary' type='submit'>Add</button>
+            <button className='btn btn-danger' onClick={() => setShowAddModal(false)}>Close</button>
+          </form>
+        </Modal>
+
 
         <div className='d-flex flex-row justify-content-around'>
 
@@ -176,15 +210,9 @@ function App() {
               </div>
             </div>
           ) : (
-
             <div className='w-75'>
               Uploaded Content
-              <form onSubmit={submitForm}>
-                <input ref={streamTitle} type="text" placeholder='enter title' />
-                <input ref={streamDescription} type="text" placeholder='enter desc' />
-                <input ref={streamURL} type='text' placeholder='enter link' />
-                <button>add</button>
-              </form>
+
 
               <div className='d-flex flex-wrap justify-content-around'>
                 {userContent.length === 0 ? (
