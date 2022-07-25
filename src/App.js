@@ -28,6 +28,7 @@ function App() {
   const [notSubscribed, setNotSubscribed] = useState();
 
   const [my_earnedBalance, setMy_earnedBalance] = useState(0);
+  const [subscriptionAmt, setSubscriptionAmt] = useState(0);
 
   // modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -73,13 +74,22 @@ function App() {
 
   // subscribe to selected users content
   const SubscribeContent = async () => {
+    let duration;
+    if (subscriptionAmt == 1000000000000000000) {
+      duration = 600; // 10 minutes
+    } else if (subscriptionAmt == 3000000000000000000) {
+      duration = 1200; // 20 minutes
+    } else {
+      duration = 1800 // 30 minutes
+    }
+    console.log(`The duration is ${duration} seconds for ${subscriptionAmt}`);
     try {
-      await approve(1000);
+      await approve(subscriptionAmt);
     } catch (error) {
       console.log("Some error in approval, ", error);
     }
     try {
-      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500, 1000).send({ from: kit.defaultAccount });
+      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500, subscriptionAmt).send({ from: kit.defaultAccount });
     } catch (error) {
       console.log("Some error in payment, ", error);
     }
@@ -143,6 +153,11 @@ function App() {
     const contents = await contract.methods.getMyUploadedMovies(useraddress).call();
     console.log(contents);
     setUserContent(contents);
+  }
+
+  const handleChange = (e) => {
+    setSubscriptionAmt(e.target.value);
+    console.log(e.target.value);
   }
 
   return (
@@ -242,16 +257,23 @@ function App() {
               <h4 className='alert-heading'>⚠ You don't have subscription for this creator ⚠</h4>
               <p>Susbcribe to view the content posted</p>
               <hr></hr>
+
               <div className="form-check form-check-inline">
-                <input className="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="1cUSD" />
+                <input className="form-check-input" type="radio"
+                  name="inlineRadioOptions" id="inlineRadio1"
+                  value="1000000000000000000" onChange={handleChange} />
                 <label className="form-check-label" htmlFor="inlineRadio1">1 cUSD</label>
               </div>
               <div className="form-check form-check-inline">
-                <input className="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="3cUSD" />
+                <input className="form-check-input" type="radio"
+                  name="inlineRadioOptions" id="inlineRadio2"
+                  value="3000000000000000000" onChange={handleChange} />
                 <label className="form-check-label" htmlFor="inlineRadio2">3 cUSD</label>
               </div>
               <div className="form-check form-check-inline">
-                <input className="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="5cUSD" />
+                <input className="form-check-input" type="radio"
+                  name="inlineRadioOptions" id="inlineRadio3"
+                  value="5000000000000000000" onChange={handleChange} />
                 <label className="form-check-label" htmlFor="inlineRadio3">5 cUSD</label>
               </div>
               <div className='d-grid col-6 mx-auto mt-3'>
