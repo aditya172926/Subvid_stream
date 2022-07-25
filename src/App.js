@@ -213,6 +213,7 @@ function App() {
           </Modal.Body>
         </Modal>
 
+        {/* Earnings Modal */}
         <Modal show={showEarningsModal} onHide={() => setShowEarningsModal(false)} size="sm" centered>
           <Modal.Header closeButton>
             <Modal.Title>My Earnings</Modal.Title>
@@ -255,6 +256,8 @@ function App() {
                     <p>Your connected Wallet address is {connectedAddress}</p>
                     <hr></hr>
                     <p>Please select any address from the side panel to subscribe and view their content</p>
+                    <h5>OR</h5>
+                    <button className='btn btn-success' onClick={() => setShowAddModal(true)}>Add your own 📣</button>
                   </div>
                 ) : (
                   userContent.map((mycontent, index) => {
