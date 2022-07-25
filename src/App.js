@@ -194,19 +194,19 @@ function App() {
           </Modal.Header>
           <Modal.Body>
             <form onSubmit={submitAddContent}>
-              <div class="mb-3">
-                <label for="exampleInputEmail1" class="form-label">Title</label>
-                <input ref={streamTitle} type="text" class="form-control" id="inputTitle" aria-describedby="titleHelp" placeholder='Enter the title of your content' />
+              <div className="mb-3">
+                <label htmlFor="exampleInputEmail1" className="form-label">Title</label>
+                <input ref={streamTitle} type="text" className="form-control" id="inputTitle" aria-describedby="titleHelp" placeholder='Enter the title of your content' />
               </div>
-              <div class="mb-3">
-                <label for="inputDesc" class="form-label">About</label>
-                <input ref={streamDescription} type="text" class="form-control" id="inputDesc" placeholder='2 liner about your content' />
+              <div className="mb-3">
+                <label htmlFor="inputDesc" className="form-label">About</label>
+                <input ref={streamDescription} type="text" className="form-control" id="inputDesc" placeholder='2 liner about your content' />
               </div>
-              <div class="mb-3">
-                <label for="inputLink" class="form-label">Content Link</label>
-                <input ref={streamURL} type="text" class="form-control" id="inputLink" placeholder='Paste your content link' />
+              <div className="mb-3">
+                <label htmlFor="inputLink" className="form-label">Content Link</label>
+                <input ref={streamURL} type="text" className="form-control" id="inputLink" placeholder='Paste your content link' />
               </div>
-              <div class="d-grid gap-2">
+              <div className="d-grid gap-2">
                 <button type='submit' className='btn btn-success'>Add</button>
               </div>
             </form>
@@ -242,9 +242,22 @@ function App() {
               <h4 className='alert-heading'>⚠ You don't have subscription for this creator ⚠</h4>
               <p>Susbcribe to view the content posted</p>
               <hr></hr>
-              <div className='d-grid col-6 mx-auto'>
+              <div className="form-check form-check-inline">
+                <input className="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="1cUSD" />
+                <label className="form-check-label" htmlFor="inlineRadio1">1 cUSD</label>
+              </div>
+              <div className="form-check form-check-inline">
+                <input className="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="3cUSD" />
+                <label className="form-check-label" htmlFor="inlineRadio2">3 cUSD</label>
+              </div>
+              <div className="form-check form-check-inline">
+                <input className="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" value="5cUSD" />
+                <label className="form-check-label" htmlFor="inlineRadio3">5 cUSD</label>
+              </div>
+              <div className='d-grid col-6 mx-auto mt-3'>
                 <button className='btn btn-danger' onClick={() => SubscribeContent()}>Subscribe</button>
               </div>
+
             </div>
           ) : (
             <div className='w-75'>
