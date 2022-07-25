@@ -228,9 +228,9 @@ function App() {
             <ul className="list-group">
               {listAccounts.map((creator, index) => {
                 return (
-                  <li onClick={() => getContent(creator)} className='list-group-item' key={index}>
+                  <button onClick={() => getContent(creator)} className='list-group-item btn btn-outline-success' key={index}>
                     {creator.substring(0, 15)}...{creator.substring(38)}
-                  </li>
+                  </button>
                 )
               })}
             </ul>
@@ -251,10 +251,10 @@ function App() {
                 {userContent.length === 0 ? (
                   <div className='alert alert-success' role='alert'>
                     <h4 className='alert-heading'>🎉 Wallet Successfully Connected 🎉</h4>
-                    <p>Congratulations and Welcome to the website</p>
+                    <p>Congratulations and Welcome to the SubVid</p>
                     <p>Your connected Wallet address is {connectedAddress}</p>
                     <hr></hr>
-                    <p>Please select any address from the side panel to view their content</p>
+                    <p>Please select any address from the side panel to subscribe and view their content</p>
                   </div>
                 ) : (
                   userContent.map((mycontent, index) => {
