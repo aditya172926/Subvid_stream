@@ -60,6 +60,7 @@ function App() {
     console.log(walletConnected);
   }
 
+  // Checks if the wallet is connected with any account on the site
   const checkWalletConnected = async () => {
     if (window.celo) {
       try {
@@ -83,6 +84,7 @@ function App() {
     }
   }
 
+  // React hook to check if wallet is connected
   useEffect(() => {
     checkWalletConnected()
   }, [connectedAddress]);
@@ -111,7 +113,7 @@ function App() {
       console.log("Some error in approval, ", error);
     }
     try {
-      const result = await contract.methods.subscribeMovie(currentCreatorAddress, 500, subscriptionAmt).send({ from: kit.defaultAccount });
+      const result = await contract.methods.subscribeMovie(currentCreatorAddress, duration, subscriptionAmt).send({ from: kit.defaultAccount });
     } catch (error) {
       console.log("Some error in payment, ", error);
     }
