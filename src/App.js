@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import celo_logo from './assets/Celo_logo.png';
 import ABI from './assets/SubscribeMovie.json';
@@ -44,8 +44,6 @@ function App() {
         kit.defaultAccount = accounts[0];
         setConnectedAddress(accounts[0]);
         contract = new kit.web3.eth.Contract(ABI, contractAddress);
-        const testcount = await contract.methods.totalContent().call();
-        console.log("The testcount is ", testcount);
         const getSignedAccounts = await contract.methods.getContentCreators().call();
         console.log(getSignedAccounts);
         setListAccounts(getSignedAccounts);
@@ -61,6 +59,33 @@ function App() {
     setLoadingSpinner(false);
     console.log(walletConnected);
   }
+
+  const checkWalletConnected = async () => {
+    if (window.celo) {
+      try {
+        setLoadingSpinner(true);
+        const web3 = new Web3(window.celo);
+        kit = newKitFromWeb3(web3);
+        const accounts = await kit.web3.eth.getAccounts();
+        kit.defaultAccount = accounts[0];
+        setConnectedAddress(accounts[0]);
+        contract = new kit.web3.eth.Contract(ABI, contractAddress);
+        const getSignedAccounts = await contract.methods.getContentCreators().call();
+        setListAccounts(getSignedAccounts);
+        await getBalance();
+        setLoadingSpinner(false);
+        setWalletConnected(true);
+      } catch (error) {
+        console.log(error);
+        setLoadingSpinner(false);
+      }
+
+    }
+  }
+
+  useEffect(() => {
+    checkWalletConnected()
+  }, [connectedAddress]);
 
   // Approve payment for subscription
   async function approve(_price) {
