@@ -1,3 +1,10 @@
+# <p align="center">Hacktoberfest 2022</p>
+👋 Hi Hackers, its a great day if you stumbled on this repository from anywhere 
+
+To start contributing to this repository, checkout the [Contributing guidelines](https://github.com/aditya172926/Subvid_stream/blob/main/CONTRIBUTING.md)
+
+To know more about this project, continue reading...
+
 # <p align="center">Subvid</p>
 
 ## <p align="center">What am I Building?</p>
