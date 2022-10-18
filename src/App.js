@@ -108,18 +108,17 @@ function App() {
     // Register function
     const submitRegister = async (e) => {
         e.preventDefault();
-        const params = [
-            userName.current.value
-        ]
+        const params = [userName.current.value];
         try {
-            await contract.methods.addUser(...params)
+            await contract.methods
+                .addUser(...params)
                 .send({ from: kit.defaultAccount });
             setShowRegisterModal(false);
         } catch (error) {
             console.log(error);
         }
-        console.log('Username is ', userName.current.value);
-    }
+        console.log("Username is ", userName.current.value);
+    };
 
     // subscribe to selected users content
     const SubscribeContent = async () => {
@@ -240,6 +239,14 @@ function App() {
                                     Earnings
                                 </button>
                             </li>
+                            <li className="nav-item">
+                                <button
+                                    className="btn btn-light"
+                                    onClick={() => setShowRegisterModal(!showRegisterModal)}
+                                >
+                                    Register
+                                </button>
+                            </li>
                         </ul>
                     </div>
                     Balance - {userBalance} cUSD
@@ -331,18 +338,33 @@ function App() {
                 </Modal>
 
                 {/* Register with username (you won't be able to access contract features properly without registering) */}
-                <Modal show={showRegisterModal} onHide={() => setShowRegisterModal(false)} centered>
+                <Modal
+                    show={showRegisterModal}
+                    onHide={() => setShowRegisterModal(false)}
+                    centered
+                >
                     <Modal.Header closeButton>
                         <Modal.Title>Register</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <form onSubmit={submitRegister}>
                             <div className="mb-3">
-                                <label htmlFor="exampleInputEmail1" className="form-label">User Name</label>
-                                <input ref={userName} type="text" className="form-control" id="inputTitle" aria-describedby="titleHelp" placeholder='Enter UserName' />
+                                <label htmlFor="exampleInputEmail1" className="form-label">
+                                    User Name
+                                </label>
+                                <input
+                                    ref={userName}
+                                    type="text"
+                                    className="form-control"
+                                    id="inputTitle"
+                                    aria-describedby="titleHelp"
+                                    placeholder="Enter UserName"
+                                />
                             </div>
                             <div className="d-grid gap-2">
-                                <button type='submit' className='btn btn-success'>Register</button>
+                                <button type="submit" className="btn btn-success">
+                                    Register
+                                </button>
                             </div>
                         </form>
                     </Modal.Body>
@@ -363,17 +385,22 @@ function App() {
                     </Modal.Body>
                 </Modal>
 
-                <div className='d-flex flex-row justify-content-around'>
+                <div className="d-flex flex-row justify-content-around">
                     <div>
                         <h3>Creators</h3>
                         <ul className="list-group">
                             {listAccounts.map((creator, index) => {
                                 const { creatorAddress, creatorUsername } = creator;
                                 return (
-                                    <button onClick={() => getContent(creatorAddress)} className='list-group-item btn btn-outline-success' key={creatorAddress} id={creatorAddress}>
+                                    <button
+                                        onClick={() => getContent(creatorAddress)}
+                                        className="list-group-item btn btn-outline-success"
+                                        key={creatorAddress}
+                                        id={creatorAddress}
+                                    >
                                         {creatorUsername}
                                     </button>
-                                )
+                                );
                             })}
                         </ul>
                     </div>
@@ -456,6 +483,10 @@ function App() {
                                         >
                                             Add your own 📣
                                         </button>
+                                        <p></p>
+                                        <b>-----[IMP]-----</b>
+                                        <p></p>
+                                        <b>⚠️ You need to first <p onClick={() => setShowRegisterModal(!showRegisterModal)} id="register__button__modal">REGISTER</p> to use all functionalities</b>
                                     </div>
                                 ) : (
                                     userContent.map((mycontent, index) => {
